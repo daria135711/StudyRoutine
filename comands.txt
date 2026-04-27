@@ -1,0 +1,46 @@
+python3 -m venv venv
+source venv/bin/activate
+pip install django
+
+deactivate
+
+python manage.py runserver
+
+python manage.py makemigrations
+python manage.py migrate
+
+django-admin startproject myshop
+python manage.py startapp myapp
+python manage.py createsuperuser
+
+
+
+
+git branch some_branch 
+
+git add text.txt - Добавить файл в репозиторий
+git commit -m "first commit"
+git log --oneline - посмотреть все коммиты.
+
+git checkout . - восстановить все.
+git checkout "код коммита" - вернуть до состояния этого коммита.
+git checkout master - вернуться в ветку мастер.
+
+git status - Текущее состояние репозитория (изменения, неразрешенные конфликты и тп)
+
+git push origin - Замерджить все ветки локального репозитория на удаленный репозиторий 
+git push origin master - Аналогично предыдущему, но делается пуш только ветки master
+        
+git pull origin - Замерджить все ветки с удаленного репозитория
+git pull origin master - Аналогично предыдущему, но накатывается только ветка master
+        
+git fetch origin - Скачать все ветки с origin, но не мерджить их в локальный репозиторий
+git fetch origin master - Аналогично предыдущему, но только для одной заданной ветки
+        
+git branch some_branch - Создать новый бранч (ответвится от текущего)
+git checkout some_branch - Переключиться на другую ветку (из тех, с которыми уже работаем)
+git branch # звездочкой отмечена текущая ветвь - Получаем список веток, с которыми работаем
+git merge some_branch - Замерджить some_branch в текущую ветку
+
+git remote -v. - проврка репозитория
+git remote set-url origin <новый_url_репозитория> - сменить репозиторий
