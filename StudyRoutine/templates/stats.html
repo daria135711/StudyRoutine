@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Статистика{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4"> Прогресс подготовки</h1>
+<div class="bg-white p-6 rounded shadow">
+    <canvas id="progressChart" width="400" height="200"></canvas>
+    <p class="mt-4 text-gray-500">Круговая диаграмма прогресса по темам появится после подключения данных.</p>
+</div>
+<script>
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: ['Изучено', 'Осталось'], datasets: [{ data: [0, 100], backgroundColor: ['#4ade80', '#cbd5e1'] }] }
+    });
+</script>
+{% endblock %}
