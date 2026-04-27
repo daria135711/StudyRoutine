@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyRoutine — {% block title %}Умное расписание{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!--кастомные стили (если нужны) -->
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <!-- HTMX для динамики -->
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <!-- Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SortableJS для Drag & Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+
+    <!-- Навигация -->
+    <nav class="bg-white shadow-md py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold text-blue-600"> StudyRoutine</a>
+            <div class="space-x-4">
+                <a href="/" class="text-gray-700 hover:text-blue-600">Сегодня</a>
+                <a href="/exams/" class="text-gray-700 hover:text-blue-600">Экзамены</a>
+                <a href="/stats/" class="text-gray-700 hover:text-blue-600">Статистика</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="container mx-auto p-6">
+        {% block content %}
+        <!-- Содержимое страницы -->
+        {% endblock %}
+    </main>
+
+    <!-- Подвал -->
+    <footer class="text-center text-gray-500 text-sm py-6 border-t mt-8">
+        StudyRoutine — интервальное повторение
+    </footer>
+
+    <!-- Общие скрипты -->
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
