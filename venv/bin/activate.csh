@@ -1,5 +1,6 @@
 # This file must be used with "source bin/activate.csh" *from csh*.
 # You cannot run it directly.
+
 # Created by Davide Di Blasi <davidedb@gmail.com>.
 # Ported to Python 3.3 venv by Andrew Svetlov <andrew.svetlov@gmail.com>
 
@@ -8,17 +9,21 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
+<<<<<<< HEAD
 setenv VIRTUAL_ENV '/home/daria/Рабочий стол/StudyRoutine/StudyRoutine_progect/venv'
+=======
+setenv VIRTUAL_ENV /Users/anastasiavinnikova/StudyRoutine/venv
+>>>>>>> 93c7a88db3494a881512e0bd620e910b70c1158c
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/"bin":$PATH"
+setenv VIRTUAL_ENV_PROMPT venv
 
 
 set _OLD_VIRTUAL_PROMPT="$prompt"
 
 if (! "$?VIRTUAL_ENV_DISABLE_PROMPT") then
-    set prompt = '(venv) '"$prompt"
-    setenv VIRTUAL_ENV_PROMPT '(venv) '
+    set prompt = "("venv") $prompt:q"
 endif
 
 alias pydoc python -m pydoc
