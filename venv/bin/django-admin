@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/home/daria/Рабочий стол/StudyRoutine/StudyRoutine/venv/bin/python3" "$0" "$@"
-' '''
+#!/Users/anastasiavinnikova/StudyRoutine-2/venv/bin/python3.13
 # -*- coding: utf-8 -*-
 import re
 import sys
