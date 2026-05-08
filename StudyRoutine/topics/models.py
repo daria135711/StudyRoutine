@@ -1,22 +1,34 @@
 from django.db import models
+from django.urls import reverse
+
 from exams.models import Exam
 
+
 class Topic(models.Model):
-    id_topic = models.AutoField(primary_key=True)
-    id_exam = models.ForeignKey(
-        Exam,
-        on_delete=models.DO_NOTHING,
-        db_column='id_exam'
+    exam = models.ForeignKey(
+        Exam, 
+        on_delete=models.CASCADE, 
+        related_name='topics',
+        verbose_name='Экзамен'
     )
-    title = models.TextField()
-    description = models.TextField()
-    is_complete = models.BooleanField()
-    priority = models.IntegerField()
-
+    title = models.CharField(max_length=200, verbose_name='Название темы')
+    description = models.TextField(blank=True, verbose_name='Описание')
+    is_completed = models.BooleanField(default=False, verbose_name='Изучено')
+    priority = models.PositiveSmallIntegerField(default=1, verbose_name='Приоритет')
+    estimated_time = models.PositiveIntegerField(
+        default=60, 
+        help_text='В минутах',
+        verbose_name='Оценочное время'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
-        db_table = 'Topic'
-        verbose_name = 'Topic'
-        verbose_name_plural = 'Topics'
-
+        ordering = ['priority', '-created_at']
+        verbose_name = 'Тема'
+        verbose_name_plural = 'Темы'
+    
     def __str__(self):
         return self.title
+    
+    def get_absolute_url(self):
+        return reverse('topic-detail', kwargs={'pk': self.pk})
