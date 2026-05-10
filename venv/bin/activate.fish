@@ -35,6 +35,7 @@ deactivate nondestructive
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 set -gx VIRTUAL_ENV '/home/daria/Рабочий стол/StudyRoutine/StudyRoutine_progect/venv'
 =======
 set -gx VIRTUAL_ENV /Users/anastasiavinnikova/StudyRoutine/venv
@@ -42,6 +43,9 @@ set -gx VIRTUAL_ENV /Users/anastasiavinnikova/StudyRoutine/venv
 =======
 set -gx VIRTUAL_ENV /Users/anastasiavinnikova/StudyRoutine-2/venv
 >>>>>>> origin/nastia
+=======
+set -gx VIRTUAL_ENV /home/daria/study/StudyRoutine/venv
+>>>>>>> fix_models
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

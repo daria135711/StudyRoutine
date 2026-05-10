@@ -49,14 +49,19 @@ case "$(uname)" in
         # transform D:\path\to\venv to /d/path/to/venv on MSYS and MINGW
         # and to /cygdrive/d/path/to/venv on Cygwin
 <<<<<<< HEAD
+<<<<<<< HEAD
         VIRTUAL_ENV=$(cygpath /Users/anastasiavinnikova/StudyRoutine/venv)
 =======
         VIRTUAL_ENV=$(cygpath /Users/anastasiavinnikova/StudyRoutine-2/venv)
 >>>>>>> origin/nastia
+=======
+        VIRTUAL_ENV=$(cygpath /home/daria/study/StudyRoutine/venv)
+>>>>>>> fix_models
         export VIRTUAL_ENV
         ;;
     *)
         # use the path as-is
+<<<<<<< HEAD
 <<<<<<< HEAD
         export VIRTUAL_ENV=/Users/anastasiavinnikova/StudyRoutine/venv
         ;;
@@ -64,6 +69,9 @@ esac
 >>>>>>> 93c7a88db3494a881512e0bd620e910b70c1158c
 =======
         export VIRTUAL_ENV=/Users/anastasiavinnikova/StudyRoutine-2/venv
+=======
+        export VIRTUAL_ENV=/home/daria/study/StudyRoutine/venv
+>>>>>>> fix_models
         ;;
 esac
 >>>>>>> origin/nastia
