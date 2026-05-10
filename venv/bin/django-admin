@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/Users/anastasiavinnikova/StudyRoutine/venv/bin/python3.13
+=======
+#!/Users/anastasiavinnikova/StudyRoutine-2/venv/bin/python3.13
+>>>>>>> origin/nastia
 # -*- coding: utf-8 -*-
 import re
 import sys
