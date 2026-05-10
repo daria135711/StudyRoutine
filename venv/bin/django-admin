@@ -1,4 +1,12 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+#!/Users/anastasiavinnikova/StudyRoutine/venv/bin/python3.13
+=======
+#!/Users/anastasiavinnikova/StudyRoutine-2/venv/bin/python3.13
+>>>>>>> origin/nastia
+=======
 #!/home/daria/study/StudyRoutine/venv/bin/python3
+>>>>>>> fix_models
 # -*- coding: utf-8 -*-
 import re
 import sys

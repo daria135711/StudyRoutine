@@ -36,19 +36,45 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+VIRTUAL_ENV='/home/daria/Рабочий стол/StudyRoutine/StudyRoutine_progect/venv'
+export VIRTUAL_ENV
+=======
+=======
+>>>>>>> origin/nastia
 # on Windows, a path can contain colons and backslashes and has to be converted:
 case "$(uname)" in
     CYGWIN*|MSYS*|MINGW*)
         # transform D:\path\to\venv to /d/path/to/venv on MSYS and MINGW
         # and to /cygdrive/d/path/to/venv on Cygwin
+<<<<<<< HEAD
+<<<<<<< HEAD
+        VIRTUAL_ENV=$(cygpath /Users/anastasiavinnikova/StudyRoutine/venv)
+=======
+        VIRTUAL_ENV=$(cygpath /Users/anastasiavinnikova/StudyRoutine-2/venv)
+>>>>>>> origin/nastia
+=======
         VIRTUAL_ENV=$(cygpath /home/daria/study/StudyRoutine/venv)
+>>>>>>> fix_models
         export VIRTUAL_ENV
         ;;
     *)
         # use the path as-is
-        export VIRTUAL_ENV=/home/daria/study/StudyRoutine/venv
+<<<<<<< HEAD
+<<<<<<< HEAD
+        export VIRTUAL_ENV=/Users/anastasiavinnikova/StudyRoutine/venv
         ;;
 esac
+>>>>>>> 93c7a88db3494a881512e0bd620e910b70c1158c
+=======
+        export VIRTUAL_ENV=/Users/anastasiavinnikova/StudyRoutine-2/venv
+=======
+        export VIRTUAL_ENV=/home/daria/study/StudyRoutine/venv
+>>>>>>> fix_models
+        ;;
+esac
+>>>>>>> origin/nastia
 
 _OLD_VIRTUAL_PATH="$PATH"
 PATH="$VIRTUAL_ENV/"bin":$PATH"

@@ -21,7 +21,6 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
     path('', TemplateView.as_view(template_name='index.html'), name='index'),
     path('auth/', TemplateView.as_view(template_name='auth.html'), name='auth_page'),
     path('daily-tasks/', TemplateView.as_view(template_name='daily_tasks.html'), name='daily_tasks_page'),

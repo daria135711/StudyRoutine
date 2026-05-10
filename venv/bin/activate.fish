@@ -33,7 +33,19 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+set -gx VIRTUAL_ENV '/home/daria/Рабочий стол/StudyRoutine/StudyRoutine_progect/venv'
+=======
+set -gx VIRTUAL_ENV /Users/anastasiavinnikova/StudyRoutine/venv
+>>>>>>> 93c7a88db3494a881512e0bd620e910b70c1158c
+=======
+set -gx VIRTUAL_ENV /Users/anastasiavinnikova/StudyRoutine-2/venv
+>>>>>>> origin/nastia
+=======
 set -gx VIRTUAL_ENV /home/daria/study/StudyRoutine/venv
+>>>>>>> fix_models
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH
