@@ -1,4 +1,4 @@
-#!/Users/anastasiavinnikova/StudyRoutine-2/venv/bin/python3.13
+#!/home/daria/study/StudyRoutine/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
