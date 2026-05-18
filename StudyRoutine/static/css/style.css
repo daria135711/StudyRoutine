@@ -1,0 +1,15 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+#task-list .list-group-item {
+    cursor: grab;
+}
+
+#task-list .list-group-item:active {
+    cursor: grabbing;
+}

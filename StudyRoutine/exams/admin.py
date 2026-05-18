@@ -3,7 +3,7 @@ from .models import Exam
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
-    list_display = ('id_exam', 'title', 'date', 'difficulty', 'id_user')
+    list_display = ('id_exam', 'title', 'date', 'difficulty', 'get_user_username')
     list_display_links = ('id_exam', 'title')
     list_filter = ('date', 'difficulty')
     search_fields = ('title',)

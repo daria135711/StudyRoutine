@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}StudyRoutine — расписание{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Подготовка к экзаменам</h1>
+    <a href="{% url 'exams:exam_add' %}" class="btn btn-primary">+ Добавить экзамен</a>
+</div>
+<p class="text-muted">Сегодня: <strong>{{ today|date:"d E Y" }}</strong>. Минут за сегодня: <strong>{{ minutes_today }}</strong></p>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <section class="card shadow-sm">
+            <div class="card-header">Экзамены и темы</div>
+            <div class="card-body">
+                {% if exams %}
+                    {% for exam in exams %}
+                        <div class="mb-4 border-bottom pb-3">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                                <div>
+                                    <h2 class="h5 mb-1">{{ exam.title }}</h2>
+                                    <p class="mb-1 small text-muted">Дата: {{ exam.date|date:"d.m.Y" }} · сложность: {{ exam.difficulty }}</p>
+                                    {% if exam.n_topics %}
+                                        <div class="progress mt-2" style="max-width: 320px; height: 0.6rem;">
+                                            {% widthratio exam.n_done exam.n_topics 100 as pct %}
+                                            <div class="progress-bar" role="progressbar" style="width: {{ pct }}%;"></div>
+                                        </div>
+                                        <small class="text-muted">Темы: {{ exam.n_done }} / {{ exam.n_topics }}</small>
+                                    {% else %}
+                                        <small class="text-muted">Добавьте темы к экзамену.</small>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex flex-column gap-1">
+                                    <a class="btn btn-sm btn-success" href="{% url 'exams:topic_add' exam.pk %}">+ Тема</a>
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{% url 'exams:home' %}?build=1&exam={{ exam.pk }}">Построить план</a>
+                                </div>
+                            </div>
+                            {% if exam.topics.all %}
+                                <ul class="list-group list-group-flush mt-2">
+                                    {% for topic in exam.topics.all %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <span>
+                                                {% if topic.is_complete %}<span class="text-success">✓</span>{% endif %}
+                                                {{ topic.title }}
+                                            </span>
+                                            <span class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-secondary">приоритет {{ topic.priority }}</span>
+                                                {% if not topic.is_complete %}
+                                                <form method="post" action="{% url 'exams:topic_complete' topic.pk %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">Готово</button>
+                                                </form>
+                                                {% endif %}
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="mb-0">Экзаменов пока нет. Нажмите «Добавить экзамен» (например «Матан» на 20 июня).</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="card shadow-sm mt-4">
+            <div class="card-header">Чек-лист на сегодня</div>
+            <div class="card-body">
+                <ul id="task-list" class="list-group">
+                    {% for task in today_tasks %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center" data-task-id="{{ task.pk }}">
+                            <span>{{ task.id_topic.title }} <span class="text-muted">({{ task.id_topic.id_exam.title }})</span></span>
+                            <form method="post" action="{% url 'exams:task_toggle' task.pk %}">
+                                {% csrf_token %}
+                                {% if task.done %}
+                                    <button type="submit" class="btn btn-sm btn-success">✓ готово</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Отметить</button>
+                                {% endif %}
+                            </form>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Нет задач на сегодня. Добавьте темы и нажмите «Построить план» у экзамена.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-4">
+        <section class="card shadow-sm mb-4">
+            <div class="card-header">Прогресс по темам</div>
+            <div class="card-body">
+                <canvas id="topics-chart" height="220"></canvas>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header">Повторы на сегодня</div>
+            <div class="card-body small">
+                {% if plans_today %}
+                    <ul class="list-unstyled mb-0">
+                        {% for plan in plans_today %}
+                            <li class="mb-1">{{ plan.id_topic.title }} — повтор №{{ plan.repetition_number }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">Постройте план у экзамена.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="card shadow-sm">
+            <div class="card-header">Pomodoro (25 / 5)</div>
+            <div class="card-body text-center">
+                <div id="pomodoro-mode" class="text-muted small mb-2">учёба</div>
+                <div id="pomodoro-display" class="display-6 mb-3">25:00</div>
+                <div class="btn-group mb-3">
+                    <button type="button" class="btn btn-primary" id="pomodoro-start">Старт</button>
+                    <button type="button" class="btn btn-outline-secondary" id="pomodoro-pause">Пауза</button>
+                    <button type="button" class="btn btn-outline-secondary" id="pomodoro-reset">Сброс</button>
+                </div>
+                <form method="post" action="{% url 'exams:session_add' %}" class="text-start">
+                    {% csrf_token %}
+                    <label class="form-label small">Сохранить сессию</label>
+                    <select name="topic_id" class="form-select form-select-sm mb-2" required>
+                        <option value="">— тема —</option>
+                        {% for topic in study_topics %}
+                            <option value="{{ topic.pk }}">{{ topic.title }} ({{ topic.id_exam.title }})</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="minutes" id="session-minutes" value="25">
+                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">Сохранить 25 мин</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const labels = {{ chart_labels_json|safe }};
+        const data = {{ chart_data_json|safe }};
+        const ctx = document.getElementById('topics-chart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{data: data, backgroundColor: ['#198754', '#dee2e6']}],
+                },
+                options: {plugins: {legend: {position: 'bottom'}}},
+            });
+        }
+    })();
+
+    (function () {
+        const el = document.getElementById('task-list');
+        if (el && el.querySelector('[data-task-id]') && typeof Sortable !== 'undefined') {
+            new Sortable(el, {animation: 150, ghostClass: 'bg-light'});
+        }
+    })();
+
+    (function () {
+        const WORK_SEC = 25 * 60;
+        const BREAK_SEC = 5 * 60;
+        let mode = 'work';
+        let remaining = WORK_SEC;
+        let timer = null;
+        let workMinutesDone = 0;
+
+        const display = document.getElementById('pomodoro-display');
+        const modeEl = document.getElementById('pomodoro-mode');
+        const minutesInput = document.getElementById('session-minutes');
+
+        function fmt(s) {
+            const m = String(Math.floor(s / 60)).padStart(2, '0');
+            const sec = String(s % 60).padStart(2, '0');
+            return m + ':' + sec;
+        }
+
+        function render() {
+            display.textContent = fmt(remaining);
+            modeEl.textContent = mode === 'work' ? 'учёба' : 'перерыв';
+        }
+
+        function tick() {
+            if (remaining <= 0) {
+                clearInterval(timer);
+                timer = null;
+                if (mode === 'work') {
+                    workMinutesDone += 25;
+                    if (minutesInput) minutesInput.value = String(workMinutesDone || 25);
+                }
+                mode = mode === 'work' ? 'break' : 'work';
+                remaining = mode === 'work' ? WORK_SEC : BREAK_SEC;
+                render();
+                return;
+            }
+            remaining -= 1;
+            render();
+        }
+
+        document.getElementById('pomodoro-start').addEventListener('click', function () {
+            if (timer) return;
+            timer = setInterval(tick, 1000);
+        });
+        document.getElementById('pomodoro-pause').addEventListener('click', function () {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        });
+        document.getElementById('pomodoro-reset').addEventListener('click', function () {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            mode = 'work';
+            remaining = WORK_SEC;
+            workMinutesDone = 0;
+            if (minutesInput) minutesInput.value = '25';
+            render();
+        });
+        render();
+    })();
+</script>
+{% endblock %}
