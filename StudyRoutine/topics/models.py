@@ -6,7 +6,8 @@ class Topic(models.Model):
     id_exam = models.ForeignKey(
         Exam,
         on_delete=models.DO_NOTHING,
-        db_column='id_exam'
+        db_column='id_exam',
+        related_name='topics',
     )
     title = models.TextField()
     description = models.TextField()

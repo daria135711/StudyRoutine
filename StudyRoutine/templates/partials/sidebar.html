@@ -1,0 +1,30 @@
+<aside class="sidebar">
+    <a href="{% url 'exams:dashboard' %}" class="sidebar-logo">Study<span>Routine</span></a>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">Главное</div>
+        <a href="{% url 'exams:dashboard' %}" class="sidebar-link{% if active_nav == 'dashboard' %} active{% endif %}">Дашборд</a>
+        <a href="{% url 'exams:tasks' %}" class="sidebar-link{% if active_nav == 'tasks' %} active{% endif %}">Задачи на сегодня</a>
+        <a href="{% url 'exams:pomodoro' %}" class="sidebar-link{% if active_nav == 'pomodoro' %} active{% endif %}">Pomodoro</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">Обучение</div>
+        <a href="{% url 'exams:exam_list' %}" class="sidebar-link{% if active_nav == 'exams' %} active{% endif %}">Экзамены</a>
+        <a href="{% url 'exams:topic_list' %}" class="sidebar-link{% if active_nav == 'topics' %} active{% endif %}">Темы</a>
+        <a href="{% url 'exams:exam_add' %}" class="sidebar-link{% if active_nav == 'exam_add' %} active{% endif %}">Добавить экзамен</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">Прочее</div>
+        <a href="{% url 'exams:analytics' %}" class="sidebar-link{% if active_nav == 'analytics' %} active{% endif %}">Аналитика</a>
+        <a href="{% url 'users:profile' %}" class="sidebar-link{% if active_nav == 'profile' %} active{% endif %}">Профиль</a>
+    </div>
+    <div class="sidebar-bottom">
+        <div class="user-pill">
+            <div class="avatar">{{ current_user.username|slice:":2"|upper }}</div>
+            <div>
+                <div class="user-name">{{ current_user.username }}</div>
+                <div class="user-role">Студент</div>
+            </div>
+        </div>
+        <a href="{% url 'users:logout' %}" class="sidebar-link" style="margin-top:8px;">Выйти</a>
+    </div>
+</aside>

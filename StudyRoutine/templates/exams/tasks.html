@@ -1,0 +1,66 @@
+{% extends "base_app.html" %}
+
+{% block title %}Задачи на сегодня — StudyRoutine{% endblock %}
+
+{% block app_content %}
+<div class="app-header">
+    <div>
+        <h1>Задачи на сегодня</h1>
+        <p>{{ today|date:"l, d E Y" }}</p>
+    </div>
+    <div class="header-progress">
+        <span style="color:var(--muted); font-size:13px;">{{ tasks_done }} из {{ today_tasks|length }} выполнено</span>
+        <div class="progress-bar-wrap" style="width:120px; margin-top:6px;">
+            <div class="progress-bar-fill" style="width: {{ tasks_pct }}%;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-13">
+    <div class="panel">
+        <div class="panel-title">Выполнено ({{ tasks_done }})</div>
+        {% for task in today_tasks %}
+        {% if task.done %}
+        <div class="task-item">
+            <div class="task-checkbox checked"></div>
+            <div class="task-content">
+                <div class="task-name done">{{ task.id_topic.title }}</div>
+                <div class="task-meta">
+                    <span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span>
+                </div>
+            </div>
+            <form method="post" action="{% url 'exams:task_toggle' task.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'exams:tasks' %}">
+                <button type="submit" class="btn-ghost" style="font-size:12px;">Отменить</button>
+            </form>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">Осталось</div>
+        {% for task in today_tasks %}
+        {% if not task.done %}
+        <div class="task-item">
+            <div class="task-checkbox"></div>
+            <div class="task-content">
+                <div class="task-name">{{ task.id_topic.title }}</div>
+                <div class="task-meta">
+                    <span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span>
+                </div>
+            </div>
+            <form method="post" action="{% url 'exams:task_toggle' task.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'exams:tasks' %}">
+                <button type="submit" class="btn-lime-sm" style="font-size:12px;">Готово</button>
+            </form>
+        </div>
+        {% endif %}
+        {% empty %}
+        <p class="empty-state">Нет задач на сегодня. Добавьте темы и постройте план у экзамена.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

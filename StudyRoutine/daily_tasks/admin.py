@@ -3,7 +3,8 @@ from .models import DailyTask
 
 @admin.register(DailyTask)
 class DailyTaskAdmin(admin.ModelAdmin):
-    list_display = ('id_daily', 'id_user', 'date', 'id_topic', 'done')
+    list_display = ('date', 'id_daily', 'id_user', 'id_topic', 'done')
+    list_display_links = ('id_daily',)
     list_filter = ('date', 'done')
     search_fields = ('id_user__username', 'id_topic__title')
     ordering = ('-date',)

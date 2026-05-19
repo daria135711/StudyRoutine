@@ -1,0 +1,40 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}Pomodoro — StudyRoutine{% endblock %}
+
+{% block app_content %}
+<div class="app-header">
+    <div>
+        <h1>Таймер Pomodoro</h1>
+        <p>Фокус 25 мин · перерыв 5 мин</p>
+    </div>
+</div>
+
+<div class="grid-13">
+    <div>
+        {% include "partials/pomodoro_widget.html" %}
+        <div class="productivity-chip-row">
+            <span class="productivity-chip">Сегодня: {{ pomodoro_today }} сессий</span>
+            <span class="productivity-chip">{{ minutes_today }} мин учёбы</span>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-title">Задачи на сегодня</div>
+        {% for task in today_tasks %}
+        <div class="task-item">
+            <div class="task-content">
+                <div class="task-name{% if task.done %} done{% endif %}">{{ task.id_topic.title }}</div>
+                <div class="task-meta"><span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span></div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty-state">Нет задач. Постройте план у экзамена.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pomodoro.js' %}"></script>
+{% endblock %}

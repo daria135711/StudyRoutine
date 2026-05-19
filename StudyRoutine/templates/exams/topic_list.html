@@ -1,0 +1,39 @@
+{% extends "base_app.html" %}
+
+{% block title %}Темы — StudyRoutine{% endblock %}
+
+{% block app_content %}
+<div class="app-header">
+    <div>
+        <h1>Темы</h1>
+        <p>{{ total_topics }} тем · {{ done_topics }} изучено</p>
+    </div>
+    <form method="get" style="display:flex; gap:10px; align-items:center;">
+        <select name="exam" class="form-select" style="width:auto;" onchange="this.form.submit()">
+            <option value="">Все экзамены</option>
+            {% for e in exams %}
+            <option value="{{ e.pk }}" {% if exam_filter == e.pk %}selected{% endif %}>{{ e.title }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<div class="topics-grid">
+    {% for topic in topics %}
+    <div class="topic-card">
+        <div class="topic-card-name">{{ topic.title }}</div>
+        <div class="topic-card-exam">{{ topic.id_exam.title }}</div>
+        <div class="topic-card-bottom">
+            <div class="topic-next-rep">{% if topic.is_complete %}Изучено{% else %}В процессе{% endif %}</div>
+            <span class="rep-badge">приоритет {{ topic.priority }}</span>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+            <a href="{% url 'exams:topic_edit' topic.pk %}" class="btn-ghost" style="font-size:12px;">Изменить</a>
+            <a href="{% url 'exams:topic_delete' topic.pk %}" class="btn-ghost" style="font-size:12px;">Удалить</a>
+        </div>
+    </div>
+    {% empty %}
+    <p class="empty-state panel">Тем пока нет.</p>
+    {% endfor %}
+</div>
+{% endblock %}

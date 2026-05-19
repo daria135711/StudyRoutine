@@ -1,0 +1,49 @@
+{% extends "base_app.html" %}
+
+{% block title %}{{ exam.title }} — StudyRoutine{% endblock %}
+
+{% block app_content %}
+<div class="app-header">
+    <div>
+        <h1>{{ exam.title }}</h1>
+        <p>{{ exam.date|date:"d.m.Y" }} · {{ exam.days_left }} дней · {{ exam.difficulty_label }}</p>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="{% url 'exams:topic_add' exam.pk %}" class="btn-primary">+ Тема</a>
+        <a href="{% url 'exams:exam_edit' exam.pk %}" class="btn-ghost">Изменить</a>
+        <a href="{% url 'exams:dashboard' %}?build=1&exam={{ exam.pk }}" class="btn-lime-sm">Построить план</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-title">Темы экзамена</div>
+    {% if exam.n_topics %}
+    <div class="progress-bar-wrap" style="margin-bottom:16px;">
+        <div class="progress-bar-fill" style="width: {% widthratio exam.n_done exam.n_topics 100 %}%;"></div>
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">{{ exam.n_done }} из {{ exam.n_topics }} тем изучено</p>
+    {% endif %}
+    {% for topic in exam.topics.all %}
+    <div class="topic-list-item">
+        <span>{% if topic.is_complete %}<span style="color:var(--lime);">&#10003;</span> {% endif %}{{ topic.title }}</span>
+        <span style="display:flex; gap:8px;">
+            {% if not topic.is_complete %}
+            <form method="post" action="{% url 'exams:topic_complete' topic.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn-lime-sm" style="font-size:11px; padding:4px 10px;">Готово</button>
+            </form>
+            {% endif %}
+            <a href="{% url 'exams:topic_edit' topic.pk %}" class="btn-ghost" style="font-size:11px; padding:4px 10px;">Изменить</a>
+            <a href="{% url 'exams:topic_delete' topic.pk %}" class="btn-ghost" style="font-size:11px; padding:4px 10px;">Удалить</a>
+        </span>
+    </div>
+    {% empty %}
+    <p class="empty-state">Тем пока нет.</p>
+    {% endfor %}
+</div>
+
+<div style="margin-top:24px;">
+    <a href="{% url 'exams:exam_delete' exam.pk %}" class="btn-ghost" style="color:#f87171;">Удалить экзамен</a>
+</div>
+{% endblock %}

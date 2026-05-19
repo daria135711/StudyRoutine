@@ -1,0 +1,134 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}Дашборд — StudyRoutine{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block app_content %}
+<div class="app-header dashboard-header">
+    <div>
+        <h1>Дашборд</h1>
+        <p>{{ today|date:"l, d E Y" }}</p>
+    </div>
+    <a href="{% url 'exams:exam_add' %}" class="btn-primary">+ Добавить экзамен</a>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-card-label">Экзаменов</div>
+        <div class="stat-card-value">{{ exams|length }}</div>
+        <div class="stat-card-sub">Активных</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-label">Сегодня задач</div>
+        <div class="stat-card-value stat-lime">{{ today_tasks|length }}</div>
+        <div class="stat-card-sub">{{ tasks_done }} выполнено</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-label">Pomodoro сегодня</div>
+        <div class="stat-card-value">{{ pomodoro_today }}</div>
+        <div class="stat-card-sub">{{ minutes_today }} мин учёбы</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-label">Тем изучено</div>
+        <div class="stat-card-value">{{ done_topics }}</div>
+        <div class="stat-card-sub">из {{ total_topics }} всего</div>
+    </div>
+</div>
+
+<div class="quick-action-bar">
+    <a href="{% url 'exams:tasks' %}" class="quick-action">Задачи на сегодня</a>
+    <a href="{% url 'exams:pomodoro' %}" class="quick-action">Pomodoro</a>
+    <a href="{% url 'exams:exam_list' %}" class="quick-action">Все экзамены</a>
+    <a href="{% url 'exams:analytics' %}" class="quick-action">Аналитика</a>
+</div>
+
+<div class="grid-13" id="exams">
+    <div class="panel">
+        <div class="panel-title">Мои экзамены <a href="{% url 'exams:exam_list' %}">Все</a></div>
+        {% if exams %}
+            {% for exam in exams|slice:":4" %}
+            <div class="exam-item">
+                <div class="exam-color"></div>
+                <div class="exam-info">
+                    <a href="{% url 'exams:exam_detail' exam.pk %}" class="exam-title" style="text-decoration:none; color:inherit;">{{ exam.title }}</a>
+                    <div class="exam-meta">
+                        {% if exam.n_topics %}{{ exam.n_done }} из {{ exam.n_topics }} тем{% else %}Нет тем{% endif %}
+                    </div>
+                </div>
+                <div class="exam-actions">
+                    <div class="exam-days-left">{{ exam.days_left }}</div>
+                    <div class="exam-days-label">дней</div>
+                    <a href="{% url 'exams:dashboard' %}?build=1&exam={{ exam.pk }}" class="btn-lime-sm" style="font-size:12px; padding:6px 12px;">План</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-state">Экзаменов пока нет.</p>
+        {% endif %}
+    </div>
+
+    <div class="panel" id="tasks">
+        <div class="panel-title">Задачи на сегодня <a href="{% url 'exams:tasks' %}">Открыть</a></div>
+        {% for task in today_tasks|slice:":5" %}
+        <div class="task-item">
+            <div class="task-content">
+                <div class="task-name{% if task.done %} done{% endif %}">{{ task.id_topic.title }}</div>
+                <div class="task-meta"><span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span></div>
+            </div>
+            <form method="post" action="{% url 'exams:task_toggle' task.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'exams:dashboard' %}">
+                <button type="submit" class="btn-ghost" style="font-size:12px;">{% if task.done %}Готово{% else %}Отметить{% endif %}</button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="empty-state">Нет задач на сегодня.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="panel">
+        <div class="panel-title">Прогресс по темам</div>
+        <canvas id="topics-chart" height="200"></canvas>
+    </div>
+    <div class="panel">
+        <div class="panel-title">Повторы на сегодня</div>
+        {% if plans_today %}
+        <ul style="list-style:none; font-size:14px;">
+            {% for plan in plans_today|slice:":6" %}
+            <li style="padding:8px 0; border-bottom:1px solid var(--border);">
+                {{ plan.id_topic.title }} — повтор №{{ plan.repetition_number }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">Постройте план у экзамена.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const labels = {{ chart_labels_json|safe }};
+    const data = {{ chart_data_json|safe }};
+    const ctx = document.getElementById('topics-chart');
+    if (ctx && typeof Chart !== 'undefined') {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{ data: data, backgroundColor: ['#D7FF3F', 'rgba(255,255,255,0.1)'], borderWidth: 0 }],
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: '#9BA3AF' } } } },
+        });
+    }
+})();
+</script>
+{% endblock %}
