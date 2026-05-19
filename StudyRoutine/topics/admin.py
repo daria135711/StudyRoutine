@@ -8,6 +8,6 @@ class TopicAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
     list_filter = ('is_complete', 'priority', 'id_exam')
     search_fields = ('title', 'description')
-    ordering = ('-priority', 'title')
+    ordering = ('title',)
     
     list_editable = ('is_complete', 'priority')

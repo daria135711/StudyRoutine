@@ -62,7 +62,7 @@
                 <div class="exam-actions">
                     <div class="exam-days-left">{{ exam.days_left }}</div>
                     <div class="exam-days-label">дней</div>
-                    <a href="{% url 'exams:dashboard' %}?build=1&exam={{ exam.pk }}" class="btn-lime-sm" style="font-size:12px; padding:6px 12px;">План</a>
+                    <a href="{% url 'exams:exam_detail' exam.pk %}" class="btn-lime-sm" style="font-size:12px; padding:6px 12px;">План</a>
                 </div>
             </div>
             {% endfor %}
@@ -76,8 +76,12 @@
         {% for task in today_tasks|slice:":5" %}
         <div class="task-item">
             <div class="task-content">
-                <div class="task-name{% if task.done %} done{% endif %}">{{ task.id_topic.title }}</div>
-                <div class="task-meta"><span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span></div>
+                <div class="task-name{% if task.done %} done{% endif %}">{% if task.task_title %}{{ task.task_title }}{% else %}{{ task.id_topic.title }}{% endif %}</div>
+                <div class="task-meta">
+                    <span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span>
+                    {% if task.activity_label %}<span class="task-activity-label">{{ task.activity_label }}</span>{% endif %}
+                </div>
+                {% if task.task_description %}<div class="task-detail-text">{{ task.task_description }}</div>{% endif %}
             </div>
             <form method="post" action="{% url 'exams:task_toggle' task.pk %}">
                 {% csrf_token %}
@@ -102,7 +106,8 @@
         <ul style="list-style:none; font-size:14px;">
             {% for plan in plans_today|slice:":6" %}
             <li style="padding:8px 0; border-bottom:1px solid var(--border);">
-                {{ plan.id_topic.title }} — повтор №{{ plan.repetition_number }}
+                <strong>{{ plan.activity_label }}</strong> — {{ plan.topic_title }}
+                <span style="display:block; font-size:12px; color:var(--muted);">{{ plan.exam.title }}</span>
             </li>
             {% endfor %}
         </ul>

@@ -24,10 +24,14 @@
         <div class="task-item">
             <div class="task-checkbox checked"></div>
             <div class="task-content">
-                <div class="task-name done">{{ task.id_topic.title }}</div>
+                <div class="task-name done">{% if task.task_title %}{{ task.task_title }}{% else %}{{ task.id_topic.title }}{% endif %}</div>
                 <div class="task-meta">
                     <span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span>
+                    {% if task.activity_label %}<span class="task-activity-label">{{ task.activity_label }}</span>{% endif %}
                 </div>
+                {% if task.task_description %}
+                <div class="task-detail-text">{{ task.task_description }}</div>
+                {% endif %}
             </div>
             <form method="post" action="{% url 'exams:task_toggle' task.pk %}">
                 {% csrf_token %}
@@ -46,10 +50,12 @@
         <div class="task-item">
             <div class="task-checkbox"></div>
             <div class="task-content">
-                <div class="task-name">{{ task.id_topic.title }}</div>
+                <div class="task-name">{% if task.task_title %}{{ task.task_title }}{% else %}{{ task.id_topic.title }}{% endif %}</div>
                 <div class="task-meta">
                     <span class="task-badge badge-lime">{{ task.id_topic.id_exam.title }}</span>
+                    {% if task.activity_label %}<span class="task-activity-label">{{ task.activity_label }}</span>{% endif %}
                 </div>
+                {% if task.task_description %}<div class="task-detail-text">{{ task.task_description }}</div>{% endif %}
             </div>
             <form method="post" action="{% url 'exams:task_toggle' task.pk %}">
                 {% csrf_token %}

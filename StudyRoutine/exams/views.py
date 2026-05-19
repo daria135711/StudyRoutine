@@ -5,16 +5,18 @@ from django.contrib import messages
 from django.db.models import Count, Q, Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from daily_tasks.models import DailyTask
-from exams.forms import ExamForm, TopicForm
+from exams.forms import ExamForm, TopicForm, TopicSubtopicForm
 from exams.models import Exam
-from study_plans.planning import build_spaced_plans_for_exam, sync_today_daily_tasks
-from study_plans.models import StudyPlan
+from study_plans.models import ExamPreparationPlan, StudyPlan
+from study_plans.personalized import build_personalized_plan, get_today_plan_items
+from study_plans.planning import sync_all_user_daily_tasks, sync_today_daily_tasks
 from study_sessions.models import StudySession
-from topics.models import Topic
+from topics.models import Topic, TopicSubtopic
 from users.auth_helpers import get_current_user, login_required
 
 
@@ -47,10 +49,11 @@ def _user_stats(user, today):
     total_topics = topics_qs.count()
     done_topics = topics_qs.filter(is_complete=True).count()
 
+    sync_all_user_daily_tasks(user, today)
     today_tasks = list(
         DailyTask.objects.filter(id_user=user, date=today)
         .select_related('id_topic', 'id_topic__id_exam')
-        .order_by('done', 'id_topic__title')
+        .order_by('done', 'id_topic__id_exam__date', 'id_topic__title')
     )
     tasks_done = sum(1 for t in today_tasks if t.done)
     tasks_pct = round(tasks_done / len(today_tasks) * 100) if today_tasks else 0
@@ -98,31 +101,36 @@ def dashboard(request):
     user = get_current_user(request)
     today = timezone.localdate()
 
-    if request.GET.get('build') and request.GET.get('exam'):
-        try:
-            exam_id = int(request.GET['exam'])
-        except (TypeError, ValueError):
-            raise Http404
-        exam = _user_exam_or_404(user, exam_id)
-        n_plans = build_spaced_plans_for_exam(exam)
-        n_tasks = sync_today_daily_tasks(user, today)
-        messages.success(
-            request,
-            f'Построен график повторений ({n_plans} записей). '
-            f'Добавлено задач на сегодня: {n_tasks}.',
-        )
-        return redirect('exams:dashboard')
-
     context = _user_stats(user, today)
     context['active_nav'] = 'dashboard'
-    context['plans_today'] = (
-        StudyPlan.objects.filter(
+    plans_today = []
+    for exam in _user_exams(user).select_related('preparation_plan'):
+        if hasattr(exam, 'preparation_plan'):
+            for item in get_today_plan_items(exam, today):
+                plans_today.append(
+                    {
+                        'exam': exam,
+                        'topic_title': item.get('topic_title', ''),
+                        'activity_label': item.get('activity_label', ''),
+                        'description': item.get('description', ''),
+                    }
+                )
+    if not plans_today:
+        for plan in StudyPlan.objects.filter(
             planned_date=today,
             id_topic__id_exam_id__in=_user_exams(user).values_list('pk', flat=True),
-        )
-        .select_related('id_topic', 'id_topic__id_exam')
-        .order_by('id_topic__title', 'repetition_number')
-    )
+        ).exclude(id_topic__id_exam__preparation_plan__isnull=False).select_related(
+            'id_topic', 'id_topic__id_exam'
+        ):
+            plans_today.append(
+                {
+                    'exam': plan.id_topic.id_exam,
+                    'topic_title': plan.id_topic.title,
+                    'activity_label': f'Повтор №{plan.repetition_number}',
+                    'description': '',
+                }
+            )
+    context['plans_today'] = plans_today
     return render(request, 'exams/dashboard.html', context)
 
 
@@ -171,7 +179,8 @@ def exam_detail(request, exam_id):
     today = timezone.localdate()
     exam = get_object_or_404(
         _user_exams(user)
-        .prefetch_related('topics')
+        .prefetch_related('topics', 'topics__subtopics')
+        .select_related('preparation_plan')
         .annotate(
             n_topics=Count('topics'),
             n_done=Count('topics', filter=Q(topics__is_complete=True)),
@@ -179,11 +188,53 @@ def exam_detail(request, exam_id):
         pk=exam_id,
     )
     _annotate_exams([exam], today)
+    preparation_plan = getattr(exam, 'preparation_plan', None)
     return render(
         request,
         'exams/exam_detail.html',
-        {'exam': exam, 'active_nav': 'exams', 'today': today},
+        {
+            'exam': exam,
+            'active_nav': 'exams',
+            'today': today,
+            'preparation_plan': preparation_plan,
+            'has_preparation_plan': preparation_plan is not None,
+        },
     )
+
+
+@login_required
+@require_POST
+def exam_build_plan(request, exam_id):
+    user = get_current_user(request)
+    today = timezone.localdate()
+    exam = _user_exam_or_404(user, exam_id)
+    has_plan = ExamPreparationPlan.objects.filter(id_exam=exam).exists()
+    confirm = request.POST.get('confirm') == '1'
+
+    if has_plan and not confirm:
+        messages.warning(
+            request,
+            'У этого экзамена уже есть план. Подтвердите пересоздание, чтобы продолжить.',
+        )
+        url = reverse('exams:exam_detail', kwargs={'exam_id': exam.pk})
+        return redirect(f'{url}?rebuild=1')
+
+    if not exam.topics.exists():
+        messages.error(request, 'Добавьте хотя бы одну тему, затем постройте план.')
+        return redirect('exams:exam_detail', exam_id=exam.pk)
+
+    try:
+        build_personalized_plan(exam, today)
+    except ValueError as exc:
+        messages.error(request, str(exc))
+        return redirect('exams:exam_detail', exam_id=exam.pk)
+
+    n_tasks = sync_today_daily_tasks(user, today)
+    messages.success(
+        request,
+        f'Персональный план подготовки создан. Задач на сегодня: {n_tasks}.',
+    )
+    return redirect('exams:exam_detail', exam_id=exam.pk)
 
 
 @login_required
@@ -413,12 +464,105 @@ def topic_complete(request, topic_id):
 
 
 @login_required
+def subtopic_add(request, topic_id):
+    user = get_current_user(request)
+    topic = get_object_or_404(Topic.objects.select_related('id_exam'), pk=topic_id, id_exam__id_user=user)
+    form = TopicSubtopicForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        subtopic = form.save(commit=False)
+        subtopic.id_topic = topic
+        subtopic.is_complete = False
+        if not subtopic.description:
+            subtopic.description = ''
+        subtopic.save()
+        messages.success(request, f'Подтема «{subtopic.title}» добавлена.')
+        return redirect('exams:exam_detail', exam_id=topic.id_exam.pk)
+
+    return render(
+        request,
+        'exams/subtopic_form.html',
+        {'form': form, 'topic': topic, 'title': f'Новая подтема — {topic.title}', 'active_nav': 'topics'},
+    )
+
+
+@login_required
+def subtopic_edit(request, subtopic_id):
+    user = get_current_user(request)
+    subtopic = get_object_or_404(
+        TopicSubtopic.objects.select_related('id_topic__id_exam'),
+        pk=subtopic_id,
+        id_topic__id_exam__id_user=user,
+    )
+    form = TopicSubtopicForm(request.POST or None, instance=subtopic)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, f'Подтема «{subtopic.title}» обновлена.')
+        return redirect('exams:exam_detail', exam_id=subtopic.id_topic.id_exam.pk)
+
+    return render(
+        request,
+        'exams/subtopic_form.html',
+        {
+            'form': form,
+            'topic': subtopic.id_topic,
+            'title': f'Редактировать — {subtopic.title}',
+            'active_nav': 'topics',
+            'subtopic': subtopic,
+        },
+    )
+
+
+@login_required
+def subtopic_delete(request, subtopic_id):
+    user = get_current_user(request)
+    subtopic = get_object_or_404(
+        TopicSubtopic.objects.select_related('id_topic__id_exam'),
+        pk=subtopic_id,
+        id_topic__id_exam__id_user=user,
+    )
+    exam = subtopic.id_topic.id_exam
+    if request.method == 'POST':
+        title = subtopic.title
+        subtopic.delete()
+        messages.success(request, f'Подтема «{title}» удалена.')
+        return redirect('exams:exam_detail', exam_id=exam.pk)
+    return render(
+        request,
+        'exams/subtopic_confirm_delete.html',
+        {'subtopic': subtopic, 'exam': exam, 'active_nav': 'topics'},
+    )
+
+
+@login_required
+@require_POST
+def subtopic_complete(request, subtopic_id):
+    user = get_current_user(request)
+    subtopic = get_object_or_404(
+        TopicSubtopic.objects.select_related('id_topic__id_exam'),
+        pk=subtopic_id,
+        id_topic__id_exam__id_user=user,
+    )
+    subtopic.is_complete = True
+    subtopic.save(update_fields=['is_complete'])
+    messages.success(request, f'Подтема «{subtopic.title}» отмечена как изученная.')
+    next_url = request.POST.get('next')
+    if next_url:
+        return redirect(next_url)
+    return redirect('exams:topic_list')
+
+
+@login_required
 @require_POST
 def task_toggle(request, task_id):
     user = get_current_user(request)
     task = get_object_or_404(DailyTask, pk=task_id, id_user=user)
     task.done = not task.done
     task.save(update_fields=['done'])
+    if task.done:
+        label = task.task_title or task.id_topic.title
+        messages.success(request, f'Задача «{label}» выполнена.')
+    else:
+        messages.info(request, 'Отметка снята.')
     next_url = request.POST.get('next')
     if next_url:
         return redirect(next_url)
