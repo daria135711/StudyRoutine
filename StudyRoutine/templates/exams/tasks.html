@@ -19,13 +19,15 @@
 <div class="panel custom-todos-panel">
     <div class="panel-title">Свои задачи на день</div>
     <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">Добавьте личные to-do — они появятся в умном расписании на дашборде.</p>
-    <form method="post" action="{% url 'exams:custom_todo_add' %}" class="custom-todo-form">
+    <form method="post" action="{% url 'exams:custom_todo_add' %}" class="custom-todo-form" style="display: flex; flex-direction: column; gap: 12px;">
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'exams:tasks' %}">
         <input type="hidden" name="date" value="{{ today|date:'Y-m-d' }}">
-        <input type="text" name="title" class="form-input" placeholder="Название задачи" required>
-        <input type="text" name="description" class="form-input" placeholder="Описание (необязательно)">
-        <button type="submit" class="btn-lime-sm">Добавить</button>
+        <input type="text" name="title" class="form-input" placeholder="Название задачи" required style="width: 100%;">
+        <input type="text" name="description" class="form-input" placeholder="Описание (необязательно)" style="width: 100%;">
+        <div>
+            <button type="submit" class="btn-lime-sm">Добавить</button>
+        </div>
     </form>
 </div>
 
