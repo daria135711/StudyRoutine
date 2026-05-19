@@ -11,42 +11,46 @@
 <div class="app-header">
     <div>
         <h1>Аналитика</h1>
-        <p>За всё время подготовки</p>
+        <p>За всё время подготовки · обновляется автоматически</p>
     </div>
 </div>
 
 <div class="stats-row">
     <div class="stat-card">
         <div class="stat-card-label">Общее время</div>
-        <div class="stat-card-value stat-lime">{{ total_minutes }}</div>
+        <div class="stat-card-value stat-lime" id="stat-total-minutes">{{ total_minutes }}</div>
         <div class="stat-card-sub">минут</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-label">Pomodoro сессий</div>
-        <div class="stat-card-value">{{ total_sessions }}</div>
+        <div class="stat-card-value" id="stat-total-sessions">{{ total_sessions }}</div>
         <div class="stat-card-sub">сохранено в базе</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-label">Тем изучено</div>
-        <div class="stat-card-value">{{ done_topics }}</div>
-        <div class="stat-card-sub">из {{ total_topics }}</div>
+        <div class="stat-card-label">Задач сегодня</div>
+        <div class="stat-card-value stat-lime" id="stat-tasks-today">{{ tasks_total }}</div>
+        <div class="stat-card-sub" id="stat-tasks-done-sub">{{ tasks_done }} выполнено</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-label">Сегодня</div>
-        <div class="stat-card-value stat-lime">{{ minutes_today }}</div>
+        <div class="stat-card-label">Сегодня (Pomodoro)</div>
+        <div class="stat-card-value stat-lime" id="stat-minutes-today">{{ minutes_today }}</div>
         <div class="stat-card-sub">минут</div>
     </div>
 </div>
 
 <div class="grid-2">
     <div class="panel">
-        <div class="panel-title">Часы учёбы за неделю</div>
-        <div class="analytics-week">
+        <div class="panel-title">Неделя: Pomodoro и задачи</div>
+        <div class="analytics-week" id="analytics-week">
             {% for day in week_data %}
             <div class="week-bar-col">
-                <div style="font-size:11px; color:var(--lime);">{{ day.minutes }}м</div>
+                <div style="font-size:11px; color:var(--lime);" data-week-minutes>{{ day.minutes }}м</div>
                 <div class="week-bar-inner">
-                    <div class="week-bar-fill" style="height:{{ day.height_pct }}%;"></div>
+                    <div class="week-bar-fill" data-week-minutes-fill style="height:{{ day.height_pct }}%;"></div>
+                </div>
+                <div style="font-size:10px; color:var(--muted); margin-top:4px;" data-week-tasks>{{ day.tasks_done }}/{{ day.tasks_total }}</div>
+                <div class="week-bar-inner" style="height:40px; margin-top:4px;">
+                    <div class="week-bar-fill" data-week-tasks-fill style="height:{{ day.tasks_height_pct }}%; background:#93c5fd;"></div>
                 </div>
                 <div class="week-bar-label">{{ day.label }}</div>
             </div>
@@ -54,44 +58,82 @@
         </div>
     </div>
     <div class="panel">
+        <div class="panel-title">Задачи на сегодня</div>
+        <canvas id="tasks-chart" height="200"></canvas>
+    </div>
+</div>
+
+<div class="grid-2" style="margin-top:20px;">
+    <div class="panel">
         <div class="panel-title">Прогресс по темам</div>
         <canvas id="topics-chart" height="200"></canvas>
+    </div>
+    <div class="panel">
+        <div class="panel-title">Тем изучено</div>
+        <p style="font-size:32px; font-weight:700; color:var(--lime); margin:20px 0 8px;">
+            <span id="stat-done-topics">{{ done_topics }}</span> / <span id="stat-total-topics">{{ total_topics }}</span>
+        </p>
+        <p style="color:var(--muted); font-size:14px;">тем отмечены как изученные</p>
     </div>
 </div>
 
 <div class="panel" style="margin-top:20px;">
     <div class="panel-title">Время по экзаменам</div>
-    {% for item in exam_stats %}
-    <div style="margin-bottom:14px;">
-        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
-            <span>{{ item.exam.title }}</span>
-            <span style="color:var(--lime);">{{ item.minutes }} мин</span>
+    <div id="analytics-exams">
+        {% for item in exam_stats %}
+        <div style="margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
+                <span>{{ item.title }}</span>
+                <span style="color:var(--lime);">{{ item.minutes }} мин</span>
+            </div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" style="width: {{ item.width_pct }}%;"></div>
+            </div>
         </div>
-        <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" style="width: {{ item.width_pct }}%;"></div>
-        </div>
+        {% empty %}
+        <p class="empty-state">Нет данных о сессиях.</p>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p class="empty-state">Нет данных о сессиях.</p>
-    {% endfor %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (function () {
-    const labels = {{ chart_labels_json|safe }};
-    const data = {{ chart_data_json|safe }};
-    const ctx = document.getElementById('topics-chart');
-    if (ctx && typeof Chart !== 'undefined') {
-        new Chart(ctx, {
+    const taskLabels = {{ task_chart_labels_json|safe }};
+    const taskData = {{ task_chart_data_json|safe }};
+    const topicLabels = {{ chart_labels_json|safe }};
+    const topicData = {{ chart_data_json|safe }};
+
+    let taskChart = null;
+    let topicChart = null;
+
+    const taskCtx = document.getElementById('tasks-chart');
+    if (taskCtx && typeof Chart !== 'undefined') {
+        taskChart = new Chart(taskCtx, {
             type: 'doughnut',
             data: {
-                labels: labels,
-                datasets: [{ data: data, backgroundColor: ['#D7FF3F', 'rgba(255,255,255,0.1)'], borderWidth: 0 }],
+                labels: taskLabels,
+                datasets: [{ data: taskData, backgroundColor: ['#D7FF3F', 'rgba(255,255,255,0.1)'], borderWidth: 0 }],
             },
             options: { plugins: { legend: { position: 'bottom', labels: { color: '#9BA3AF' } } } },
         });
+    }
+
+    const topicCtx = document.getElementById('topics-chart');
+    if (topicCtx && typeof Chart !== 'undefined') {
+        topicChart = new Chart(topicCtx, {
+            type: 'doughnut',
+            data: {
+                labels: topicLabels,
+                datasets: [{ data: topicData, backgroundColor: ['#D7FF3F', 'rgba(255,255,255,0.1)'], borderWidth: 0 }],
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: '#9BA3AF' } } } },
+        });
+    }
+
+    if (window.StudyRoutineBindCharts) {
+        window.StudyRoutineBindCharts(taskChart, topicChart);
     }
 })();
 </script>

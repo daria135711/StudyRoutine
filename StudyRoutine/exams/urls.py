@@ -14,6 +14,7 @@ urlpatterns = [
     path('exams/<int:exam_id>/build-plan/', views.exam_build_plan, name='exam_build_plan'),
     path('topics/', views.topic_list, name='topic_list'),
     path('analytics/', views.analytics, name='analytics'),
+    path('analytics/data/', views.analytics_data, name='analytics_data'),
     path('exam/add/', views.exam_add, name='exam_add'),
     path('exam/<int:exam_id>/edit/', views.exam_edit, name='exam_edit'),
     path('exam/<int:exam_id>/delete/', views.exam_delete, name='exam_delete'),
@@ -26,5 +27,9 @@ urlpatterns = [
     path('subtopic/<int:subtopic_id>/delete/', views.subtopic_delete, name='subtopic_delete'),
     path('subtopic/<int:subtopic_id>/complete/', views.subtopic_complete, name='subtopic_complete'),
     path('task/<int:task_id>/toggle/', views.task_toggle, name='task_toggle'),
+    path('kanban/update/', views.kanban_update_status, name='kanban_update'),
+    path('tasks/custom/add/', views.custom_todo_add, name='custom_todo_add'),
+    path('tasks/custom/<int:todo_id>/toggle/', views.custom_todo_toggle, name='custom_todo_toggle'),
+    path('tasks/custom/<int:todo_id>/delete/', views.custom_todo_delete, name='custom_todo_delete'),
     path('session/add/', views.session_add, name='session_add'),
 ]

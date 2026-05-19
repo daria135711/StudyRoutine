@@ -18,6 +18,7 @@ from study_plans.knowledge_fetcher import fetch_topic_knowledge
 from study_plans.models import ExamPreparationPlan, StudyPlan
 from topics.constants import PRIORITY_ORDER
 from topics.models import Topic
+from topics.subtopics import sync_generated_subtopics
 
 ACTIVITY_SEQUENCE = (
     ('theory', 'Теория'),
@@ -185,7 +186,9 @@ def build_personalized_plan(exam: Exam, today: date | None = None) -> ExamPrepar
     topic_blocks = []
     for topic in topics:
         knowledge = fetch_topic_knowledge(topic.title, topic.description or '')
-        topic_blocks.append(_build_topic_block(topic, knowledge))
+        block = _build_topic_block(topic, knowledge)
+        sync_generated_subtopics(topic, block['theory']['subtopics'])
+        topic_blocks.append(block)
 
     study_until = exam.date - timedelta(days=1)
     if study_until < today:

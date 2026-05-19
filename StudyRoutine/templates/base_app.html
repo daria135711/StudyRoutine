@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% load static %}
 {% block body %}
-<div class="app-layout">
+<div class="app-layout" data-analytics-url="{% url 'exams:analytics_data' %}">
     {% include "partials/sidebar.html" %}
     <div class="app-main">
         {% include "partials/messages.html" %}
         {% block app_content %}{% endblock %}
     </div>
 </div>
+<script src="{% static 'js/analytics_live.js' %}"></script>
 {% endblock %}

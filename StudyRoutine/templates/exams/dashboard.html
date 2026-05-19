@@ -4,6 +4,7 @@
 {% block title %}Дашборд — StudyRoutine{% endblock %}
 
 {% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/kanban.css' %}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 {% endblock %}
 
@@ -24,8 +25,8 @@
     </div>
     <div class="stat-card">
         <div class="stat-card-label">Сегодня задач</div>
-        <div class="stat-card-value stat-lime">{{ today_tasks|length }}</div>
-        <div class="stat-card-sub">{{ tasks_done }} выполнено</div>
+        <div class="stat-card-value stat-lime" id="stat-tasks-today">{{ tasks_total }}</div>
+        <div class="stat-card-sub" id="dashboard-tasks-done">{{ tasks_done }} выполнено</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-label">Pomodoro сегодня</div>
@@ -38,6 +39,56 @@
         <div class="stat-card-sub">из {{ total_topics }} всего</div>
     </div>
 </div>
+
+<section class="kanban-panel">
+    <div class="kanban-panel-header">
+        <div>
+            <h2>Умное расписание</h2>
+            <p>Перетаскивайте задачи, управляйте дедлайнами и планируйте неделю.</p>
+        </div>
+        <a href="{% url 'exams:tasks' %}" class="btn-ghost">Сегодня</a>
+    </div>
+    <div class="kanban-board" id="kanban-board"
+        data-update-url="{% url 'exams:kanban_update' %}"
+        data-csrf="{{ csrf_token }}">
+        <div class="kanban-column" data-status="todo">
+            <div class="kanban-column-title">Нужно сделать</div>
+            <div class="kanban-column-body" data-status="todo">
+                {% for card in kanban_columns.todo %}
+                <div class="kanban-card" draggable="true" data-id="{{ card.id }}" data-type="{{ card.type }}">
+                    <div class="kanban-card-title">{{ card.title }}</div>
+                    <div class="kanban-card-meta">{{ card.subtitle }}</div>
+                </div>
+                {% endfor %}
+                <p class="kanban-empty"{% if kanban_columns.todo %} hidden{% endif %}>Нет задач</p>
+            </div>
+        </div>
+        <div class="kanban-column" data-status="in_progress">
+            <div class="kanban-column-title">В процессе</div>
+            <div class="kanban-column-body" data-status="in_progress">
+                {% for card in kanban_columns.in_progress %}
+                <div class="kanban-card" draggable="true" data-id="{{ card.id }}" data-type="{{ card.type }}">
+                    <div class="kanban-card-title">{{ card.title }}</div>
+                    <div class="kanban-card-meta">{{ card.subtitle }}</div>
+                </div>
+                {% endfor %}
+                <p class="kanban-empty"{% if kanban_columns.in_progress %} hidden{% endif %}>Нет задач</p>
+            </div>
+        </div>
+        <div class="kanban-column" data-status="done">
+            <div class="kanban-column-title">Завершено</div>
+            <div class="kanban-column-body" data-status="done">
+                {% for card in kanban_columns.done %}
+                <div class="kanban-card" draggable="true" data-id="{{ card.id }}" data-type="{{ card.type }}">
+                    <div class="kanban-card-title">{{ card.title }}</div>
+                    <div class="kanban-card-meta">{{ card.subtitle }}</div>
+                </div>
+                {% endfor %}
+                <p class="kanban-empty"{% if kanban_columns.done %} hidden{% endif %}>Нет задач</p>
+            </div>
+        </div>
+    </div>
+</section>
 
 <div class="quick-action-bar">
     <a href="{% url 'exams:tasks' %}" class="quick-action">Задачи на сегодня</a>
@@ -136,4 +187,5 @@
     }
 })();
 </script>
+<script src="{% static 'js/kanban.js' %}"></script>
 {% endblock %}
