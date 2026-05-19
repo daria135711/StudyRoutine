@@ -1,0 +1,29 @@
+<div class="pomodoro-section panel" data-pomodoro>
+    <div class="pomodoro-wrap">
+        <div class="pomodoro-ring" data-pomo-ring style="--pomo-deg: 360deg;">
+            <div class="pomodoro-center">
+                <div class="pomodoro-time" data-pomo-time>25:00</div>
+                <div class="pomodoro-label" data-pomo-label>фокус</div>
+            </div>
+        </div>
+        <div class="pomo-controls">
+            <button type="button" class="pomo-btn primary" data-pomo-start>Старт</button>
+            <button type="button" class="pomo-btn secondary" data-pomo-pause>Пауза</button>
+            <button type="button" class="pomo-btn secondary" data-pomo-reset>Сброс</button>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'exams:session_add' %}" class="pomodoro-save-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <label class="form-label">Текущая тема</label>
+        <select name="topic_id" class="form-select" data-pomo-topic required>
+            <option value="">Выберите тему</option>
+            {% for topic in study_topics %}
+            <option value="{{ topic.pk }}">{{ topic.title }} ({{ topic.id_exam.title }})</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="minutes" id="session-minutes" value="25">
+        <button type="submit" class="btn-full btn-lime" style="margin-top:16px;">Сохранить сессию</button>
+    </form>
+</div>

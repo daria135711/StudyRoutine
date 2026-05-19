@@ -1,7 +1,9 @@
 from functools import wraps
+from urllib.parse import urlencode
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.shortcuts import redirect
+from django.urls import reverse
 
 from users.models import User
 
@@ -30,7 +32,6 @@ def hash_password(raw_password):
 def check_user_password(user, raw_password):
     if not user.password:
         return False
-    # Хэш Django (после регистрации) или старый пароль из админки (текст)
     if user.password.startswith('pbkdf2_'):
         return check_password(raw_password, user.password)
     return user.password == raw_password
@@ -40,7 +41,9 @@ def login_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if get_current_user(request) is None:
-            return redirect('users:login')
+            login_url = reverse('users:login')
+            next_url = request.get_full_path()
+            return redirect(f'{login_url}?{urlencode({"next": next_url})}')
         return view_func(request, *args, **kwargs)
 
     return wrapper

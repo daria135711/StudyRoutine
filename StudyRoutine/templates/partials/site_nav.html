@@ -1,0 +1,10 @@
+<nav class="site-nav">
+    <a href="{% url 'exams:main' %}" class="logo">Study<span>Routine</span></a>
+    <div class="site-nav-auth">
+        {% if current_user %}
+            <a href="{% url 'exams:dashboard' %}" class="btn-primary">Дашборд</a>
+        {% else %}
+            <a href="{% url 'users:login' %}" class="btn-outline auth-btn-style">Войти / Регистрация</a>
+        {% endif %}
+    </div>
+</nav>

@@ -1,0 +1,13 @@
+{% extends "base_app.html" %}
+{% block title %}Удалить тему — StudyRoutine{% endblock %}
+{% block app_content %}
+<div class="panel form-page">
+    <h1>Удалить тему?</h1>
+    <p style="color:var(--muted); margin:16px 0 24px;">«{{ topic.title }}» ({{ exam.title }})</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-lime-sm" style="background:#f87171; color:white;">Удалить</button>
+        <a href="{% url 'exams:exam_detail' exam.pk %}" class="btn-ghost">Отмена</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}Аналитика — StudyRoutine{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block app_content %}
+<div class="app-header">
+    <div>
+        <h1>Аналитика</h1>
+        <p>За всё время подготовки</p>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-card-label">Общее время</div>
+        <div class="stat-card-value stat-lime">{{ total_minutes }}</div>
+        <div class="stat-card-sub">минут</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-label">Pomodoro сессий</div>
+        <div class="stat-card-value">{{ total_sessions }}</div>
+        <div class="stat-card-sub">сохранено в базе</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-label">Тем изучено</div>
+        <div class="stat-card-value">{{ done_topics }}</div>
+        <div class="stat-card-sub">из {{ total_topics }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-label">Сегодня</div>
+        <div class="stat-card-value stat-lime">{{ minutes_today }}</div>
+        <div class="stat-card-sub">минут</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="panel">
+        <div class="panel-title">Часы учёбы за неделю</div>
+        <div class="analytics-week">
+            {% for day in week_data %}
+            <div class="week-bar-col">
+                <div style="font-size:11px; color:var(--lime);">{{ day.minutes }}м</div>
+                <div class="week-bar-inner">
+                    <div class="week-bar-fill" style="height:{{ day.height_pct }}%;"></div>
+                </div>
+                <div class="week-bar-label">{{ day.label }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-title">Прогресс по темам</div>
+        <canvas id="topics-chart" height="200"></canvas>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:20px;">
+    <div class="panel-title">Время по экзаменам</div>
+    {% for item in exam_stats %}
+    <div style="margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
+            <span>{{ item.exam.title }}</span>
+            <span style="color:var(--lime);">{{ item.minutes }} мин</span>
+        </div>
+        <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width: {{ item.width_pct }}%;"></div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="empty-state">Нет данных о сессиях.</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const labels = {{ chart_labels_json|safe }};
+    const data = {{ chart_data_json|safe }};
+    const ctx = document.getElementById('topics-chart');
+    if (ctx && typeof Chart !== 'undefined') {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{ data: data, backgroundColor: ['#D7FF3F', 'rgba(255,255,255,0.1)'], borderWidth: 0 }],
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: '#9BA3AF' } } } },
+        });
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base_public.html" %}
+
+{% block title %}StudyRoutine — главная{% endblock %}
+
+{% block public_content %}
+{% include "partials/site_nav.html" %}
+
+<section class="hero">
+    <div class="hero-left">
+        <div class="hero-tag">Алгоритм интервального повторения</div>
+        <h1>Умное<br>расписание<br><em>экзаменов</em></h1>
+        <p>Добавь экзамены и темы — алгоритм автоматически распределит повторения по дням. Таймер Pomodoro, прогресс-трекер и аналитика в одном месте.</p>
+        <div class="hero-cta">
+            <a href="{% if current_user %}{% url 'exams:dashboard' %}{% else %}{% url 'users:login' %}?next={% url 'exams:dashboard' %}{% endif %}" class="btn-primary" style="font-size:15px; padding:13px 28px;">Начать подготовку</a>
+        </div>
+        <div class="hero-stats">
+            <div>
+                <div class="hero-stat-num">12<span>+</span></div>
+                <div class="hero-stat-label">Алгоритмов повторения</div>
+            </div>
+            <div>
+                <div class="hero-stat-num">1<span>:3:7</span></div>
+                <div class="hero-stat-label">Интервалы SuperMemo</div>
+            </div>
+            <div>
+                <div class="hero-stat-num">25<span>мин</span></div>
+                <div class="hero-stat-label">Сессии Pomodoro</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="exam-card-hero">
+            <div class="exam-header">
+                <div>
+                    <div style="font-size:11px; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Экзамен</div>
+                    <div class="exam-name">Математический анализ</div>
+                </div>
+                <div class="exam-date-badge">20 июня · 28 дней</div>
+            </div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" style="width:42%"></div>
+            </div>
+            <div class="progress-label">
+                <span>Прогресс 42%</span>
+                <span>5 из 12 тем</span>
+            </div>
+            <div class="topics-list">
+                <div class="topic-row">
+                    <div class="topic-check done">&#10003;</div>
+                    <span class="topic-name">Пределы функций</span>
+                    <span class="topic-tag tag-today">Повторение 3</span>
+                </div>
+                <div class="topic-row">
+                    <div class="topic-check done">&#10003;</div>
+                    <span class="topic-name">Производные</span>
+                    <span class="topic-tag tag-today">Сегодня</span>
+                </div>
+                <div class="topic-row">
+                    <div class="topic-check todo"></div>
+                    <span class="topic-name">Интегралы</span>
+                    <span class="topic-tag tag-today">Сегодня</span>
+                </div>
+                <div class="topic-row">
+                    <div class="topic-check todo"></div>
+                    <span class="topic-name">Ряды Тейлора</span>
+                    <span class="topic-tag tag-tomorrow">Завтра</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-cards-row">
+            <div class="card-sm">
+                <div style="font-size:11px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">Сегодня</div>
+                <div style="font-size:26px; font-weight:700; color:var(--lime);">3</div>
+                <div style="font-size:12px; color:var(--muted);">темы на повторение</div>
+            </div>
+            <div class="card-sm">
+                <div style="font-size:11px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">Этот час</div>
+                <div style="font-size:26px; font-weight:700; color:var(--white);">18:32</div>
+                <div style="font-size:12px; color:var(--muted);">Pomodoro идёт</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section" id="how">
+    <div class="section-label">Как это работает</div>
+    <div class="section-title">Четыре шага<br>до успешного экзамена</div>
+    <p class="section-sub">Никакой ручной работы — просто добавь экзамен и темы, остальное алгоритм возьмёт на себя.</p>
+    <div class="steps-grid">
+        <div class="step">
+            <div class="step-num">01</div>
+            <h3>Добавь экзамен</h3>
+            <p>Укажи название, дату и уровень сложности. Можно добавить сколько угодно экзаменов.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">02</div>
+            <h3>Внеси темы</h3>
+            <p>Для каждого экзамена добавляй темы — «Интегралы», «Пределы», «Ряды Фурье» и т.д.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">03</div>
+            <h3>Алгоритм строит план</h3>
+            <p>Система использует интервалы 1·3·7·14 дней и автоматически генерирует ежедневный чек-лист.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">04</div>
+            <h3>Учи и отмечай</h3>
+            <p>Запускай Pomodoro-таймер, изучай тему и отмечай выполнено. Прогресс растёт автоматически.</p>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section" id="features">
+    <div class="section-label">Возможности</div>
+    <div class="section-title">Всё для эффективной<br>подготовки</div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>Интервальное повторение</h3>
+            <p>Алгоритм вдохновлён SuperMemo: темы повторяются через 1, 3, 7 и 14 дней после первого изучения. Это доказанный способ долгосрочного запоминания.</p>
+            <span class="feature-highlight">1 · 3 · 7 · 14 дней</span>
+        </div>
+        <div class="feature-card">
+            <h3>Таймер Pomodoro</h3>
+            <p>25 минут сфокусированной работы, 5 минут отдыха. Каждая сессия сохраняется — видишь сколько времени потратил на каждую тему.</p>
+            <span class="feature-highlight">Автосохранение сессий</span>
+        </div>
+        <div class="feature-card">
+            <h3>Ежедневный чек-лист</h3>
+            <p>Каждое утро система формирует список тем на сегодня. Никогда не думаешь «что учить» — просто открываешь и делаешь.</p>
+            <span class="feature-highlight">Автогенерация задач</span>
+        </div>
+        <div class="feature-card">
+            <h3>Аналитика прогресса</h3>
+            <p>Диаграммы по каждому экзамену, график активности по дням, статистика времени подготовки. Видишь реальный прогресс.</p>
+            <span class="feature-highlight">Прогресс в реальном времени</span>
+        </div>
+    </div>
+</section>
+
+{% if not current_user %}
+<div class="cta-section">
+    <div>
+        <h2>Готов сдать<br>все экзамены?</h2>
+        <p>Начни подготовку прямо сейчас — это бесплатно</p>
+    </div>
+    <a href="{% url 'users:register' %}" class="btn-black">Создать аккаунт</a>
+</div>
+{% endif %}
+
+<footer class="footer">
+    <a href="{% url 'exams:main' %}" class="logo" style="font-size:16px;">Study<span style="color:var(--lime)">Routine</span></a>
+    <div class="footer-copy">© {% now "Y" %} StudyRoutine. Все права защищены.</div>
+</footer>
+{% endblock %}

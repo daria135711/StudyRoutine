@@ -1,0 +1,20 @@
+{% extends "base_app.html" %}
+{% block title %}Профиль — StudyRoutine{% endblock %}
+{% block app_content %}
+<div class="app-header">
+    <div><h1>Настройки профиля</h1><p>Управление аккаунтом</p></div>
+</div>
+<div class="panel form-page">
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-field">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn-lime-sm">Сохранить</button>
+    </form>
+</div>
+{% endblock %}
