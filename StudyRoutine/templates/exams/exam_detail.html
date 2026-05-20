@@ -1,6 +1,11 @@
 {% extends "base_app.html" %}
+{% load static %}
 
 {% block title %}{{ exam.title }} — StudyRoutine{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/plan_panel.css' %}">
+{% endblock %}
 
 {% block app_content %}
 <div class="app-header">
@@ -8,10 +13,16 @@
         <h1>{{ exam.title }}</h1>
         <p>{{ exam.date|date:"d.m.Y" }} · {{ exam.days_left }} дней · {{ exam.difficulty_label }}</p>
     </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="exam-header-actions">
         <a href="{% url 'exams:topic_add' exam.pk %}" class="btn-primary">+ Тема</a>
         <a href="{% url 'exams:exam_edit' exam.pk %}" class="btn-ghost">Изменить</a>
-        <a href="{% url 'exams:dashboard' %}?build=1&exam={{ exam.pk }}" class="btn-lime-sm">Построить план</a>
+        {% if has_preparation_plan %}
+        <button type="button" class="btn-lime-sm" id="toggle-plan-panel">План</button>
+        {% endif %}
+        <button type="button" class="btn-lime-sm" id="build-plan-btn"
+            data-has-plan="{% if has_preparation_plan %}1{% else %}0{% endif %}">
+            Построить план
+        </button>
     </div>
 </div>
 
@@ -25,8 +36,10 @@
     {% endif %}
     {% for topic in exam.topics.all %}
     <div class="topic-list-item">
-        <span>{% if topic.is_complete %}<span style="color:var(--lime);">&#10003;</span> {% endif %}{{ topic.title }}</span>
-        <span style="display:flex; gap:8px;">
+        <span>{% if topic.is_complete %}<span style="color:var(--lime);">&#10003;</span> {% endif %}{{ topic.title }}
+            <span class="priority-badge priority-{{ topic.priority }}">{{ topic.priority }}</span>
+        </span>
+        <span style="display:flex; gap:8px; align-items:center;">
             {% if not topic.is_complete %}
             <form method="post" action="{% url 'exams:topic_complete' topic.pk %}">
                 {% csrf_token %}
@@ -38,12 +51,153 @@
             <a href="{% url 'exams:topic_delete' topic.pk %}" class="btn-ghost" style="font-size:11px; padding:4px 10px;">Удалить</a>
         </span>
     </div>
+    {% if topic.subtopics.all %}
+    <div class="topic-list-item" style="margin-left:24px; flex-direction:column; gap:8px;">
+        {% for subtopic in topic.subtopics.all %}
+        <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start;">
+            <div>
+                <span>{% if subtopic.is_complete %}<span style="color:var(--lime);">&#10003;</span> {% endif %}{{ subtopic.title }}</span>
+                {% if subtopic.description %}
+                <div style="color:var(--muted); font-size:13px; margin-top:4px;">{{ subtopic.description }}</div>
+                {% endif %}
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                {% if not subtopic.is_complete %}
+                <form method="post" action="{% url 'exams:subtopic_complete' subtopic.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn-lime-sm" style="font-size:11px; padding:4px 10px;">Готово</button>
+                </form>
+                {% endif %}
+                <a href="{% url 'exams:subtopic_edit' subtopic.pk %}" class="btn-ghost" style="font-size:11px; padding:4px 10px;">Изменить</a>
+                <a href="{% url 'exams:subtopic_delete' subtopic.pk %}" class="btn-ghost" style="font-size:11px; padding:4px 10px;">Удалить</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="topic-list-item" style="margin-left:24px;">
+        <a href="{% url 'exams:subtopic_add' topic.pk %}" class="btn-ghost" style="font-size:11px; padding:4px 10px;">+ Добавить подтему</a>
+    </div>
     {% empty %}
-    <p class="empty-state">Тем пока нет.</p>
+    <p class="empty-state">Тем пока нет. Добавьте темы, затем нажмите «Построить план».</p>
     {% endfor %}
 </div>
 
 <div style="margin-top:24px;">
     <a href="{% url 'exams:exam_delete' exam.pk %}" class="btn-ghost" style="color:#f87171;">Удалить экзамен</a>
 </div>
+
+{% if has_preparation_plan %}
+<div class="plan-panel" id="plan-panel" aria-hidden="true">
+    <div class="plan-panel-header">
+        <h2>План подготовки</h2>
+        <button type="button" class="plan-panel-close" id="close-plan-panel" aria-label="Закрыть">&times;</button>
+    </div>
+    <p class="plan-panel-meta">Обновлён: {{ preparation_plan.generated_at|date:"d.m.Y H:i" }}</p>
+    <p class="plan-method-note">{{ preparation_plan.plan_data.method_note }}</p>
+
+    <div class="plan-schedule-block">
+        <h3>Расписание по дням</h3>
+        {% for day in preparation_plan.plan_data.schedule %}
+        <div class="plan-day-card">
+            <div class="plan-day-title">День {{ day.day_number }} · {{ day.date|slice:"8:10" }}.{{ day.date|slice:"5:7" }}.{{ day.date|slice:":4" }}</div>
+            <ul class="plan-day-items">
+                {% for item in day.items %}
+                <li>
+                    <strong>{{ item.activity_label }}</strong> — {{ item.topic_title }}
+                    <span class="plan-item-desc">{{ item.description }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% for topic in preparation_plan.plan_data.topics %}
+    <article class="plan-topic-card">
+        <header class="plan-topic-header">
+            <h3>{{ topic.title }}</h3>
+            <span class="priority-badge priority-{{ topic.priority }}">{{ topic.priority }}</span>
+        </header>
+        <p class="plan-topic-desc">{{ topic.description }}</p>
+
+        <section class="plan-section">
+            <h4>Ключевые понятия</h4>
+            <ul class="plan-concepts">
+                {% for c in topic.theory.key_concepts %}
+                <li><strong>{{ c.term }}</strong> — {{ c.definition }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="plan-section">
+            <h4>Теоремы и положения</h4>
+            <ul>
+                {% for th in topic.theory.theorems %}
+                <li><strong>{{ th.name }}</strong>: {{ th.statement }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        <section class="plan-section">
+            <h4>Подтемы</h4>
+            <ul class="plan-subtopics">
+                {% for st in topic.theory.subtopics %}
+                <li><strong>{{ st.title }}</strong> — {{ st.description }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="plan-section plan-practice">
+            <h4>Практика (базовая)</h4>
+            <ul>
+                {% for task in topic.practice_basic %}
+                <li>{{ task }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="plan-section">
+            <h4>Углублённая теория</h4>
+            <p>{{ topic.advanced_theory_notes }}</p>
+        </section>
+
+        <section class="plan-section plan-practice">
+            <h4>Практика (экзаменационная)</h4>
+            <ul>
+                {% for task in topic.practice_advanced %}
+                <li>{{ task }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </article>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="modal-overlay" id="rebuild-modal" hidden>
+    <div class="modal-card">
+        <h3>Пересоздать план?</h3>
+        <p>У этого экзамена уже есть план подготовки. При подтверждении план будет переделан с учётом актуальных данных по темам.</p>
+        <form method="post" action="{% url 'exams:exam_build_plan' exam.pk %}" id="rebuild-form">
+            {% csrf_token %}
+            <input type="hidden" name="confirm" value="1">
+            <div class="modal-actions">
+                <button type="submit" class="btn-lime-sm">Да, пересоздать</button>
+                <button type="button" class="btn-ghost" id="rebuild-cancel">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<form method="post" action="{% url 'exams:exam_build_plan' exam.pk %}" id="build-plan-form" style="display:none;">
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/exam_plan.js' %}"></script>
+{% if request.GET.rebuild %}
+<script>document.addEventListener('DOMContentLoaded', function () { document.getElementById('rebuild-modal')?.removeAttribute('hidden'); });</script>
+{% endif %}
 {% endblock %}

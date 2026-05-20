@@ -1,0 +1,26 @@
+{% extends "base_app.html" %}
+
+{% block title %}{{ title }} — StudyRoutine{% endblock %}
+
+{% block app_content %}
+<div class="form-page">
+    <h1>{{ title }}</h1>
+    <p style="color:var(--muted); font-size:14px; margin-bottom:24px;">Тема: {{ topic.title }}</p>
+    <form method="post" id="subtopic-form" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-field">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <div class="form-error">{{ field.errors.0 }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" class="btn-lime-sm">{% if subtopic %}Сохранить{% else %}Добавить подтему{% endif %}</button>
+            <a href="{% url 'exams:exam_detail' topic.id_exam.pk %}" class="btn-ghost">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

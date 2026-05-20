@@ -6,9 +6,10 @@
 <div class="form-page">
     <h1>{{ title }}</h1>
     <p style="color:var(--muted); font-size:14px; margin-bottom:24px;">Экзамен: {{ exam.title }} ({{ exam.date|date:"d.m.Y" }})</p>
-    <form method="post">
+    <form method="post" id="topic-form" novalidate>
         {% csrf_token %}
         {% for field in form %}
+        {% if field.name != 'priority' %}
         <div class="form-field">
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
@@ -16,11 +17,61 @@
             <div class="form-error">{{ field.errors.0 }}</div>
             {% endif %}
         </div>
+        {% endif %}
         {% endfor %}
+        <div class="form-field">
+            <label class="form-label" for="id_priority">Приоритет</label>
+            <input type="text" name="priority" id="id_priority" class="form-input"
+                list="priority-options" placeholder="низкий, средний или высокий"
+                value="{{ form.priority.value|default:'' }}" autocomplete="off" required>
+            <datalist id="priority-options">
+                <option value="низкий">
+                <option value="средний">
+                <option value="высокий">
+            </datalist>
+            <p class="form-hint">Укажите только одно значение: <strong>низкий</strong>, <strong>средний</strong> или <strong>высокий</strong>.</p>
+            <div class="form-error" id="priority-client-error" hidden></div>
+            {% if form.priority.errors %}
+            <div class="form-error">{{ form.priority.errors.0 }}</div>
+            {% endif %}
+        </div>
         <div class="form-actions">
-            <button type="submit" class="btn-lime-sm">Добавить тему</button>
+            <button type="submit" class="btn-lime-sm">{% if topic %}Сохранить{% else %}Добавить тему{% endif %}</button>
             <a href="{% url 'exams:exam_detail' exam.pk %}" class="btn-ghost">Отмена</a>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const form = document.getElementById('topic-form');
+  const input = document.getElementById('id_priority');
+  const errorBox = document.getElementById('priority-client-error');
+  const allowed = ['низкий', 'средний', 'высокий'];
+
+  if (!form || !input) return;
+
+  form.addEventListener('submit', function (event) {
+    const value = (input.value || '').trim().toLowerCase();
+    if (!allowed.includes(value)) {
+      event.preventDefault();
+      errorBox.hidden = false;
+      errorBox.textContent = 'Допустимы только значения: низкий, средний, высокий.';
+      input.focus();
+      return;
+    }
+    errorBox.hidden = true;
+    input.value = value;
+  });
+
+  input.addEventListener('input', function () {
+    const value = (input.value || '').trim().toLowerCase();
+    if (allowed.includes(value)) {
+      errorBox.hidden = true;
+    }
+  });
+})();
+</script>
 {% endblock %}

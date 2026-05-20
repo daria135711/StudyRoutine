@@ -1,5 +1,28 @@
 from django.db import models
+
+from exams.models import Exam
 from topics.models import Topic
+
+
+class ExamPreparationPlan(models.Model):
+    id_plan_exam = models.AutoField(primary_key=True)
+    id_exam = models.OneToOneField(
+        Exam,
+        on_delete=models.CASCADE,
+        db_column='id_exam',
+        related_name='preparation_plan',
+    )
+    plan_data = models.JSONField()
+    generated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ExamPreparationPlan'
+        verbose_name = 'Exam Preparation Plan'
+        verbose_name_plural = 'Exam Preparation Plans'
+
+    def __str__(self):
+        return f'План подготовки — {self.id_exam.title}'
+
 
 class StudyPlan(models.Model):
     id_plan = models.AutoField(primary_key=True)

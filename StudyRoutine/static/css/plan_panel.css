@@ -1,0 +1,233 @@
+.exam-header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.priority-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: lowercase;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.priority-badge.priority-высокий {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.priority-badge.priority-средний {
+  color: #93c5fd;
+  border-color: rgba(147, 197, 253, 0.35);
+}
+
+.priority-badge.priority-низкий {
+  color: #86efac;
+  border-color: rgba(134, 239, 172, 0.35);
+}
+
+.plan-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(520px, 92vw);
+  height: 100vh;
+  background: var(--black-2);
+  border-left: 1px solid var(--border);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  padding: 28px 24px 48px;
+}
+
+.plan-panel.is-open {
+  transform: translateX(0);
+}
+
+.plan-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.plan-panel-header h2 {
+  font-size: 22px;
+}
+
+.plan-panel-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.plan-panel-meta,
+.plan-method-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.plan-schedule-block {
+  margin-bottom: 28px;
+}
+
+.plan-schedule-block h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.plan-day-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.plan-day-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--lime);
+}
+
+.plan-day-items {
+  list-style: none;
+  font-size: 13px;
+}
+
+.plan-day-items li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.plan-day-items li:last-child {
+  border-bottom: none;
+}
+
+.plan-item-desc {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.plan-topic-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.plan-topic-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.plan-topic-header h3 {
+  font-size: 18px;
+}
+
+.plan-topic-desc {
+  font-size: 14px;
+  margin-bottom: 14px;
+  line-height: 1.55;
+}
+
+.plan-section {
+  margin-bottom: 14px;
+}
+
+.plan-section h4 {
+  font-size: 13px;
+  color: var(--lime);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.plan-section ul {
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.plan-section li {
+  margin-bottom: 6px;
+}
+
+.plan-practice {
+  background: rgba(215, 255, 63, 0.04);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-card {
+  background: var(--gray-mid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.modal-card h3 {
+  margin-bottom: 12px;
+}
+
+.modal-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.task-activity-label {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--lime);
+  margin-bottom: 4px;
+}
+
+.task-detail-text {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}

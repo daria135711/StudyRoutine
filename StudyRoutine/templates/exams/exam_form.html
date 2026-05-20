@@ -11,6 +11,9 @@
         <div class="form-field">
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
+            {% if field.name == 'date' %}
+            <p class="form-hint">Формат: дд.мм.гггг (например, 25.06.2026)</p>
+            {% endif %}
             {% if field.errors %}
             <div class="form-error">{{ field.errors.0 }}</div>
             {% endif %}
