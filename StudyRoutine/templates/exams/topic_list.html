@@ -8,14 +8,6 @@
         <h1>Темы</h1>
         <p>{{ total_topics }} тем · {{ done_topics }} изучено</p>
     </div>
-    <form method="get" style="display:flex; gap:10px; align-items:center;">
-        <select name="exam" class="form-select" style="width:auto;" onchange="this.form.submit()">
-            <option value="">Все экзамены</option>
-            {% for e in exams %}
-            <option value="{{ e.pk }}" {% if exam_filter == e.pk %}selected{% endif %}>{{ e.title }}</option>
-            {% endfor %}
-        </select>
-    </form>
 </div>
 
 <div class="topics-grid">
