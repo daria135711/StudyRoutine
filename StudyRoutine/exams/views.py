@@ -2,6 +2,8 @@ import json
 from datetime import timedelta
 
 from django.contrib import messages
+from django.db import transaction
+from django.db import connection
 from django.db.models import Count, Q, Sum
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -415,17 +417,36 @@ def topic_delete(request, topic_id):
         id_exam__id_user=user,
     )
     exam = topic.id_exam
+    
     if request.method == 'POST':
         title = topic.title
+        
+        # Удаляем связанные DailyTask
+        deleted_tasks = DailyTask.objects.filter(id_topic=topic).delete()
+        print(f"Удалено DailyTask: {deleted_tasks}")
+        
+        # Удаляем связанные StudySession
+        from study_sessions.models import StudySession
+        StudySession.objects.filter(id_topic=topic).delete()
+        
+        # Удаляем связанные StudyPlan
+        from study_plans.models import StudyPlan
+        StudyPlan.objects.filter(id_topic=topic).delete()
+        
+        # Удаляем подтемы
+        topic.subtopics.all().delete()
+        
+        # Теперь удаляем тему
         topic.delete()
-        messages.success(request, f'Тема «{title}» удалена.')
+        
+        messages.success(request, f'Тема «{title}» и все связанные данные удалены.')
         return redirect('exams:exam_detail', exam_id=exam.pk)
+    
     return render(
         request,
         'exams/topic_confirm_delete.html',
         {'topic': topic, 'exam': exam, 'active_nav': 'topics'},
     )
-
 
 @login_required
 @require_POST

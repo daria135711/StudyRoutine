@@ -8,7 +8,7 @@ class Topic(models.Model):
     id_topic = models.AutoField(primary_key=True)
     id_exam = models.ForeignKey(
         Exam,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         db_column='id_exam',
         related_name='topics',
     )
